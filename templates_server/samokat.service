@@ -1,0 +1,15 @@
+[Unit]
+Description=Samokat Telegram bot
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Samokat/
+ExecStart=/root/Samokat/venv/bin/python3 -m main
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
