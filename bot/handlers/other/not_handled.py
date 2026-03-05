@@ -95,7 +95,7 @@ async def not_handled_message(message: Message, state: FSMContext,
                 await message.answer(bot_texts.menu['night'])
             if not user_data.authorized:
                 await telegram.topic_manager.edit_topic(
-                    name=f'{message.from_user.full_name} [Пользователь]',
+                    name=f'{message.from_user.full_name} [Кандидат]',
                     thread_id=user_data.thread_id,
                     emoji_id='5377438129928020693'
                 )

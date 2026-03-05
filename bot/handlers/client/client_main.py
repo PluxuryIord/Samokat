@@ -34,6 +34,9 @@ from bot.initialization import admin_access, config
 from bot.initialization import bot_texts
 import asyncio
 from aiogram.enums import ContentType
+from aiogram.types import ReplyKeyboardRemove
+
+CANDIDATE_TEXT = '\n\nЕсли вы не оформлены у нас, то жми кнопку ниже ⬇️'
 
 
 async def start_message(first_name, user_id):
@@ -96,13 +99,13 @@ async def main_menu(update: Union[Message, CallbackQuery],
                 if code == 404:
                     await wait_registration.delete()
                     new_menu_id = await update.bot.send_message(user.id,
-                                                                text=bot_texts.menu['registration'],
+                                                                text=bot_texts.menu['registration'] + CANDIDATE_TEXT,
                                                                 reply_markup=await kb_client_menu.send_phone())
                 else:
                     new_menu_id = await wait_registration.edit_text(text='<b>Данный аккаунт уже авторизирован!</b>')
         else:
             await wait_registration.delete()
-            new_menu_id = await bot.send_message(user.id, text=bot_texts.menu['registration'],
+            new_menu_id = await bot.send_message(user.id, text=bot_texts.menu['registration'] + CANDIDATE_TEXT,
                                                  reply_markup=await kb_client_menu.send_phone())
     else:
         try:
@@ -134,14 +137,14 @@ async def main_menu(update: Union[Message, CallbackQuery],
                     else:
                         if code == 404:
                             new_menu_id = await bot.send_message(user.id,
-                                                                 text=bot_texts.menu['registration'],
+                                                                 text=bot_texts.menu['registration'] + CANDIDATE_TEXT,
                                                                  reply_markup=await kb_client_menu.send_phone())
                         else:
                             new_menu_id = await bot.send_message(user.id,
                                                                  text='<b>Данный аккаунт уже авторизирован!</b>')
                 else:
                     new_menu_id = await bot.send_message(user.id,
-                                                         text=bot_texts.menu['registration'],
+                                                         text=bot_texts.menu['registration'] + CANDIDATE_TEXT,
                                                          reply_markup=await kb_client_menu.send_phone())
     if not alert:
         await telegram.delete_message(update)
@@ -179,6 +182,22 @@ async def handle_contact(message: Message, user_data: DB.User):
     else:
         new_menu_id = await message.bot.send_message(
             message.from_user.id, bot_texts.menu['not_registered'])
+    DB.User.update(mark=message.from_user.id, menu_id=new_menu_id.message_id)
+
+
+async def handle_join_team(message: Message, user_data: DB.User):
+    await message.delete()
+    await telegram.delete_message(chat_id=message.from_user.id, message_id=user_data.menu_id)
+    link_user = generate_user_hlink(user_id=message.from_user.id, text_link=message.from_user.full_name)
+    await topic_manager.send_message(
+        user_data.thread_id,
+        f'<b>🦹‍♂️ Кандидат {link_user} хочет стать частью команды!</b>'
+    )
+    new_menu_id = await message.bot.send_message(
+        message.from_user.id,
+        '<b>✅ Спасибо за ваш интерес! Мы рассмотрим вашу заявку и свяжемся с вами.</b>',
+        reply_markup=ReplyKeyboardRemove()
+    )
     DB.User.update(mark=message.from_user.id, menu_id=new_menu_id.message_id)
 
 
@@ -226,6 +245,7 @@ def register_handlers_client_main(dp: Dispatcher):
     dp.callback_query.register(telegram.delete_message, F.data == 'client_delete_message')
     dp.callback_query.register(back_menu, F.data == 'client_back_menu')
     dp.message.register(handle_contact, F.content_type == ContentType.CONTACT, F.chat.type == 'private')
+    dp.message.register(handle_join_team, F.text == 'Стать частью команды 🦹‍♂️', F.chat.type == 'private')
     dp.callback_query.register(chats, F.data == 'client_chats')
     dp.callback_query.register(rules, F.data == 'client_rules')
     dp.callback_query.register(client_contacts, F.data == 'client_contacts')

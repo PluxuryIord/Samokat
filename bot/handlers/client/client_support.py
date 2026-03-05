@@ -51,7 +51,7 @@ async def wait_question(message: Message, state: FSMContext, user_data: DB.User,
     await menu.edit_text('⏳')
     try:
         await telegram.topic_manager.edit_topic(
-            name=f'{message.from_user.full_name} [Пользователь]',
+            name=f'{message.from_user.full_name} [{"Кандидат" if not user_data.authorized else "Пользователь"}]',
             thread_id=user_data.thread_id,
             emoji_id='5377438129928020693'
         )

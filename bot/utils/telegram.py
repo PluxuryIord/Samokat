@@ -401,7 +401,7 @@ class TopicManager:
         return topic.message_thread_id
 
     async def create_user_topic(self, first_name: str):
-        return await self.create_topic(f'{first_name} [Пользователь]', 5417915203100613993)
+        return await self.create_topic(f'{first_name} [Кандидат]', 5417915203100613993)
 
     async def send_message(self, thread_id: int, text: str,
                            reply_markup: InlineKeyboardMarkup = None, main_bot: bool = False,

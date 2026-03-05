@@ -27,7 +27,8 @@ back_menu = create_inline([['🔙 Меню', 'call', 'client_back_menu']], 1)
 
 async def send_phone():
     builder = ReplyKeyboardBuilder()
-    builder.add(KeyboardButton(text="Отправить контакт", request_contact=True))
+    builder.row(KeyboardButton(text="Отправить контакт", request_contact=True))
+    builder.row(KeyboardButton(text="Стать частью команды 🦹‍♂️"))
     return builder.as_markup(resize_keyboard=True)
 
 
